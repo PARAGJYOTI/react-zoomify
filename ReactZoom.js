@@ -1,7 +1,7 @@
 import React from 'react'
 
 
-export default class ImageZoom extends React.Component{
+export default class ReactZoom extends React.Component{
      constructor(){
          super()
          this.state={
