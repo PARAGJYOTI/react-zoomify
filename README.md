@@ -1,8 +1,8 @@
 # react-zoom
-Image Zooming library for react
-# Publify.js
-Action based PubSub Library on top of Socket.io 
-####Making real-time event based code much simpler and maintainable
+An Image Zooming library for react 
+  best for e-commerce 
+
+
 
 
 #Installation
