@@ -4,7 +4,7 @@
 import React from 'react'
 
 
-export default class ReactZoom extends React.Component{
+export default class ReactZoomify extends React.Component{
      constructor(){
          super()
          this.state={
