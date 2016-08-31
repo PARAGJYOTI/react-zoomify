@@ -1,6 +1,6 @@
 # react-zoomify
 An Image Zooming library for react 
-  best for e-commerce 
+  (best for e-commerce) 
 
 
 
