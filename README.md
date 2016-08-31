@@ -1,4 +1,4 @@
-# react-zoom
+# react-zoomify
 An Image Zooming library for react 
   best for e-commerce 
 
@@ -7,7 +7,7 @@ An Image Zooming library for react
 
 #Installation
 ```npm
- npm install --save react-zoom
+ npm install --save react-zoomify
  ```
 
 ### Use Cases 
@@ -24,12 +24,12 @@ An Image Zooming library for react
 
 #### For es6
  ```
- import ReactZoom from 'react-zoom'
+ import ReactZoomify from 'react-zoomify'
 ```
 
 #### For es5
  ```
-var ReactZoom =require('react-zoom')
+var ReactZoomify =require('react-zoomify')
 ```
 ## API documentation
    
@@ -53,7 +53,7 @@ var ReactZoom =require('react-zoom')
   ``` 
    render(){
    
-    return   <ReactZoom 
+    return   <ReactZoomify
                  width={300} 
                  src='../path/image.jpg'
                  s={150} 
