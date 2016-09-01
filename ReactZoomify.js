@@ -3,8 +3,9 @@
 // 2016
 
 import React from 'react'
+import Offset from 'document-offset'
 
-export default class ReactZoomify extends React.Component{
+export default class ImageZoom extends React.Component{
      constructor(){
          super()
          this.state={
@@ -19,7 +20,8 @@ export default class ReactZoomify extends React.Component{
              cEx:0,
              cEy:0,
              isVisible:false,
-             isStatic:false
+             isStatic:false,
+             scroll:0
          }
      }
      
@@ -34,9 +36,6 @@ export default class ReactZoomify extends React.Component{
            let  w=this.props.width;
 
              let that=this
-       
-              // As Image height is not provided as prop , height is calculated after image is loaded.        
-      
        img.addEventListener('load',function(){
           
            var h=img.clientHeight,
@@ -46,25 +45,56 @@ export default class ReactZoomify extends React.Component{
            that.setState({h:h,Ox,Oy})
            
        })
-   
+          
+          
+          
+    //     modal.addEventListener('scroll',function(){
+          
+    //    })
+     let modal=  document.getElementsByClassName('in modal')
+         Array.from(modal).forEach(function(element) {
+      element.addEventListener('scroll', function() {
+          
+          let  Oy=img.getBoundingClientRect().top
+          let   Ox=img.getBoundingClientRect().left
+           that.setState({scroll:element.scrollTop,Oy})
+        
+          
+      });
+    });
+      
         window.addEventListener('mousemove',this.handleMouseMove.bind(this))  
-         this.setState({w,cEx,cEy})
+         this.setState({w,cEx,cEy:cEy})
         
      }
+        
      componentWillUnmount(){
+         
          window.removeEventListener('mousemove',this.handleMouseMove.bind(this))
+         
+         
          let img=this.refs.img.removeEventListener('load',function(){
           
            var h=img.clientHeight
            that.setState({h:h})
            
        })
-            
+        
+       let modal=  document.getElementsByClassName('in modal')
+         Array.from(modal).forEach(function(element) {
+           element.removeEventListener('scroll', function() {
+          
+          let  Oy=img.getBoundingClientRect().top
+          let   Ox=img.getBoundingClientRect().left
+           that.setState({scroll:element.scrollTop,Oy})
+        
+          
+      });
+    });
+
      }
      
      handleMouseMove({pageX,pageY}){
-               // pageX and pageY are the cursor position during mousemove 
-
           let dx=this.d(pageX,this.state.Ox,this.props.s),
               dy=this.d(pageY,this.state.Oy,this.props.s);
               
@@ -73,12 +103,8 @@ export default class ReactZoomify extends React.Component{
          let w=this.props.width,
               h=this.state.h,
               
-                    
-         // isVisible is for checking the cursor is within the image or not. 
-           // if mouse is outside the img element , isvisible is false and vise versa      
+              
               isVisible=false,
-   // isStatic is used for the square sized clipper on the image is touching the boundrary of the parent image or not.
-     
               isStatic=false
               
               
@@ -88,7 +114,9 @@ export default class ReactZoomify extends React.Component{
           if(px > Ox && py > Oy && px < w+Ox && py< h+Oy ){
               isVisible=true
           }    
-         
+          let clipper=document.getElementById('clipper')
+          
+        //   console.log(clipper.getBoundingClientRect().top,'cll',py)
           
           this.setState({px:pageX,py:pageY,dx:dx,dy:dy,isVisible:isVisible,isStatic:isStatic})
      }
@@ -133,10 +161,10 @@ export default class ReactZoomify extends React.Component{
               src=this.props.src,
               zoomedImgTop=this.props.zoomedImgTop,
               zoomedImgLeft=this.props.zoomedImgLeft
-         let {dx,dy,Ox,Oy,py,px,cEx,cEy}=this.state  
+         let {dx,dy,Ox,Oy,py,px,cEx,cEy,scroll}=this.state  
          
             
-         let sPos=  getSposition(dx,dy,w,h,s,Ox,Oy,px,py,cEx,cEy)     
+         let sPos=  getSposition(dx,dy,w,h,s,Ox,Oy,px,py,cEx,cEy,scroll)     
          
          let sLeft=sPos.sLeft
          let sTop=sPos.sTop
@@ -160,17 +188,18 @@ export default class ReactZoomify extends React.Component{
                 position:'absolute',
                 width:`${s}px`,
                 height:`${s}px`,
-                top:`${!this.state.isStatic?py-this.state.cEy:sTop}`,
+                top:`${!this.state.isStatic?py-this.state.cEy+this.state.scroll:sTop}`,
                 left:`${!this.state.isStatic?px-this.state.cEx:sLeft}`,
                 // top:`${py-this.state.cEy}`,
                 // left:`${px-this.state.cEx}`,
                 visibility:`${this.state.isVisible?'visible':'hidden'}`,
-                background:'rgba(0,0,0,.3)',
+                background:'transparent',
+                boxShadow:'0px 1px 16px 0px rgba(0,0,0,0.5)'
                 
             }}
            
            ></div>
-           {console.log(s,'s')}
+       
            <div
             style={{
                 width:`${S}px`,
@@ -193,11 +222,11 @@ export default class ReactZoomify extends React.Component{
                  
             }}
            >
-        {console.log(px,px-(s/2),this.state.isStatic)}
+      
    
            </div>
            
-           
+           {console.log('scroll:',this.state.scroll ,'cEy :', cEy, 'Oy :',Oy)}
            
          </div>
          
@@ -206,11 +235,9 @@ export default class ReactZoomify extends React.Component{
      
 };
 
-//getSposition returns calculated position of Square-clipper 
-//if dx,dy<0 or dx<w-s , dy<h-s , the clipper is going outside the boundrary which is prevented via setting isStatic to true 
 
 
-function getSposition(dx,dy,w,h,s,Ox,Oy,px,py,cEx,cEy){
+function getSposition(dx,dy,w,h,s,Ox,Oy,px,py,cEx,cEy,scroll){
   let sLeft=Ox,
       sTop=Oy
     if(dx<0){
@@ -252,7 +279,8 @@ function getSposition(dx,dy,w,h,s,Ox,Oy,px,py,cEx,cEy){
         }
   }
        
-   //errors on clipper position are eliminated finally.    
-  return {sLeft:sLeft-(cEx-(s/2)),sTop:sTop-(cEy-(s/2))}  
+  return {sLeft:sLeft-(cEx-(s/2)),sTop:sTop-(cEy-(s/2))+scroll}  
     
 }
+
+          
