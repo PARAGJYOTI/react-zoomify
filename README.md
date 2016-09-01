@@ -3,9 +3,7 @@ An Image Zooming library for react
   (best for e-commerce) 
 
 
-
-
-#Installation
+##Installation
 ```npm
  npm install --save react-zoomify
  ```
