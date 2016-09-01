@@ -88,8 +88,7 @@ export default class ReactZoomify extends React.Component{
           if(px > Ox && py > Oy && px < w+Ox && py< h+Oy ){
               isVisible=true
           }    
-          let clipper=document.getElementById('clipper')
-          console.log(clipper.getBoundingClientRect().top,'cll',py)
+         
           
           this.setState({px:pageX,py:pageY,dx:dx,dy:dy,isVisible:isVisible,isStatic:isStatic})
      }
