@@ -1,8 +1,8 @@
+
 // paragjyoti2012@gmail.com
 // 2016
 
 import React from 'react'
-
 
 export default class ReactZoomify extends React.Component{
      constructor(){
@@ -16,6 +16,8 @@ export default class ReactZoomify extends React.Component{
              h:0,
              dx:0,
              dy:0,
+             cEx:0,
+             cEy:0,
              isVisible:false,
              isStatic:false
          }
@@ -24,23 +26,29 @@ export default class ReactZoomify extends React.Component{
      
      
      componentDidMount(){
-         let img=this.refs.img,
-             Ox=img.offsetLeft,
-             Oy=img.offsetTop,
-             w=this.props.width;
+          let img=document.getElementById('img')      
+          let clipper=document.getElementById('clipper')
+          let  cEx= clipper.getBoundingClientRect().left+(this.props.s/2),    //these are clipper position erors tht are eliminated
+               cEy=clipper.getBoundingClientRect().top+(this.props.s/2)
+          
+           let  w=this.props.width;
+
              let that=this
-       // As Image height is not provided as prop , height is calculated after image is loaded.        
-             
+       
+              // As Image height is not provided as prop , height is calculated after image is loaded.        
+      
        img.addEventListener('load',function(){
           
-           var h=img.clientHeight
-           that.setState({h:h})
+           var h=img.clientHeight,
+            Oy=img.getBoundingClientRect().top,
+            Ox=img.getBoundingClientRect().left
+   
+           that.setState({h:h,Ox,Oy})
            
        })
-                      
-             
+   
         window.addEventListener('mousemove',this.handleMouseMove.bind(this))  
-         this.setState({Ox,Oy,w})
+         this.setState({w,cEx,cEy})
         
      }
      componentWillUnmount(){
@@ -55,8 +63,8 @@ export default class ReactZoomify extends React.Component{
      }
      
      handleMouseMove({pageX,pageY}){
-      // pageX and pageY are the cursor position during mousemove 
-         
+               // pageX and pageY are the cursor position during mousemove 
+
           let dx=this.d(pageX,this.state.Ox,this.props.s),
               dy=this.d(pageY,this.state.Oy,this.props.s);
               
@@ -65,22 +73,23 @@ export default class ReactZoomify extends React.Component{
          let w=this.props.width,
               h=this.state.h,
               
+                    
          // isVisible is for checking the cursor is within the image or not. 
            // if mouse is outside the img element , isvisible is false and vise versa      
-              isVisible=true,
-          
-         // isStatic is used for the square sized clipper on the image is touching the boundrary of the parent image or not.
-              
+              isVisible=false,
+   // isStatic is used for the square sized clipper on the image is touching the boundrary of the parent image or not.
+     
               isStatic=false
               
               
           if(dx < 0 || dy < 0 || dx > w-this.props.s || dy > h-this.props.s){
               isStatic=true
           }    
-          if(px < Ox || py < Oy || px > w+Ox || py> h+Oy ){
-              isVisible=false
+          if(px > Ox && py > Oy && px < w+Ox && py< h+Oy ){
+              isVisible=true
           }    
-          
+          let clipper=document.getElementById('clipper')
+          console.log(clipper.getBoundingClientRect().top,'cll',py)
           
           this.setState({px:pageX,py:pageY,dx:dx,dy:dy,isVisible:isVisible,isStatic:isStatic})
      }
@@ -125,10 +134,10 @@ export default class ReactZoomify extends React.Component{
               src=this.props.src,
               zoomedImgTop=this.props.zoomedImgTop,
               zoomedImgLeft=this.props.zoomedImgLeft
-         let {dx,dy,Ox,Oy,py,px}=this.state  
+         let {dx,dy,Ox,Oy,py,px,cEx,cEy}=this.state  
          
             
-         let sPos=  getSposition(dx,dy,w,h,s,Ox,Oy,px,py)     
+         let sPos=  getSposition(dx,dy,w,h,s,Ox,Oy,px,py,cEx,cEy)     
          
          let sLeft=sPos.sLeft
          let sTop=sPos.sTop
@@ -142,24 +151,27 @@ export default class ReactZoomify extends React.Component{
              src={src}
              width={w+'px'}
              height='auto'
-             style={{margin:'50px'}}
+             
+             style={{margin:'60px',position:'relative'}}
            ></img>
         
          </div>
-           <div
+           <div id='clipper'
             style={{
                 position:'absolute',
                 width:`${s}px`,
                 height:`${s}px`,
-                top:`${!this.state.isStatic?py-(s/2):sTop}px`,
-                left:`${!this.state.isStatic?px-(s/2):sLeft}px`,
+                top:`${!this.state.isStatic?py-this.state.cEy:sTop}`,
+                left:`${!this.state.isStatic?px-this.state.cEx:sLeft}`,
+                // top:`${py-this.state.cEy}`,
+                // left:`${px-this.state.cEx}`,
                 visibility:`${this.state.isVisible?'visible':'hidden'}`,
                 background:'rgba(0,0,0,.3)',
                 
             }}
            
            ></div>
-           
+           {console.log(s,'s')}
            <div
             style={{
                 width:`${S}px`,
@@ -182,7 +194,7 @@ export default class ReactZoomify extends React.Component{
                  
             }}
            >
-        
+        {console.log(px,px-(s/2),this.state.isStatic)}
    
            </div>
            
@@ -198,7 +210,8 @@ export default class ReactZoomify extends React.Component{
 //getSposition returns calculated position of Square-clipper 
 //if dx,dy<0 or dx<w-s , dy<h-s , the clipper is going outside the boundrary which is prevented via setting isStatic to true 
 
-function getSposition(dx,dy,w,h,s,Ox,Oy,px,py){
+
+function getSposition(dx,dy,w,h,s,Ox,Oy,px,py,cEx,cEy){
   let sLeft=Ox,
       sTop=Oy
     if(dx<0){
@@ -240,6 +253,7 @@ function getSposition(dx,dy,w,h,s,Ox,Oy,px,py){
         }
   }
        
-  return {sLeft:sLeft,sTop:sTop}  
+   //errors on clipper position are eliminated finally.    
+  return {sLeft:sLeft-(cEx-(s/2)),sTop:sTop-(cEy-(s/2))}  
     
 }
